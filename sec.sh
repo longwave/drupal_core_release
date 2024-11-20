@@ -207,36 +207,36 @@ do
     branches[$i]="${base[$i]}.x"
 
     patch=''
-    if [[ $i -eq 0 ]]; then
+#    if [[ $i -eq 0 ]]; then
       echo -e "\nPath to the ${branches[$i]} patch for ${advisories[$sa]} (tab completion works but not '~'):"
       read -e patch
 
       # This will be empty on the first pass because it is initialized above.
       # Thereafter it will be whatever was entered for the last branch (based
       # on input order, not version order).
-      if [ -z $patch ] ; then
-        echo -e "\nYou must specify at least one patch name:"
-        read -e patch
-      fi
-    else
-      echo -e "\nPath to the ${branches[$i]} patch for ${advisories[$sa]} (blank to use the last patch):"
-      read -e patch
-    fi
+#      if [ -z $patch ] ; then
+#        echo -e "\nYou must specify at least one patch name:"
+#        read -e patch
+#      fi
+#    else
+#      echo -e "\nPath to the ${branches[$i]} patch for ${advisories[$sa]} (blank to use the last patch):"
+#      read -e patch
+#    fi
 
-    if [[ -s "$patch" ]] ; then
+#    if [[ -s "$patch" ]] ; then
       # Use indirect expansion, because bash 3 doesn't support associative
       # arrays.
       declare patches_${sa}_${i}="$patch"
-    else
-      if [[ -z "$patch" ]] ; then
-        last_index=$(( $i - 1 ))
-        last_patch=patches_${sa}_${last_index}
-        declare patches_${sa}_${i}=${!last_patch}
-      else
-        echo -e "\nNo valid filename was supplied."
-        exit 1
-      fi
-    fi
+#    else
+#      if [[ -z "$patch" ]] ; then
+#        last_index=$(( $i - 1 ))
+#        last_patch=patches_${sa}_${last_index}
+#        declare patches_${sa}_${i}=${!last_patch}
+#      else
+#        echo -e "\nNo valid filename was supplied."
+#        exit 1
+#      fi
+#    fi
   done
 
   echo -e "\nEnter the list of contributors for ${advisories[$sa]}, separated by commas (blank for none):"
@@ -265,6 +265,10 @@ for i in "${!versions[@]}"; do
     varname=patches_${sa}_${i}
     f=${!varname}
 
+    if [[ -z "$f" ]] ; then
+        echo -e "\nSkipping $varname due to no patch.\n"
+    else
+
     echo -e "\nAttempting to apply patch $f...\n"
 
     # Check that the patch doesn't update Drupal.php or bootstrap.inc,
@@ -278,7 +282,7 @@ for i in "${!versions[@]}"; do
 #      exit 1
 #    fi
 
-    echo -e "\nPast the grep exit condition...\n"
+#    echo -e "\nPast the grep exit condition...\n"
 
     git apply --index "$f"
 
@@ -294,6 +298,7 @@ for i in "${!versions[@]}"; do
     fi
 
     git commit -am "$commit_message" --no-verify
+    fi
   done
 
   # If we're on D8 or higher, perform a clean Composer install.
